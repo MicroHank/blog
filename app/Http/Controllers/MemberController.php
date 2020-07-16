@@ -1,0 +1,201 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
+use Validator;
+use Illuminate\Support\Facades\Auth;
+use App\Repositories\Member\MemberRepository;
+use App\Models\Member;
+use App\Models\MemberLogs;
+
+class MemberController extends Controller
+{
+    public function __construct(MemberRepository $mr)
+    {
+        $this->middleware('language');
+        $this->member_rep = $mr ;
+    }
+    
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function index()
+    {
+        if (! Auth::check()) {
+            return redirect()->route('login') ;
+        }
+
+        // $members = DB::table('member')->get();
+        // $members = DB::table('member')->paginate(10);
+        $perpage = config('henwen.paginate.member.list', 10) ;
+        $member = Member::getMemberPaginate($perpage) ;
+        return view('member.index', ['member' => $member ]) ;
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create(Request $request)
+    {
+        return view('member.create') ;
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(Request $request)
+    {
+        $account = $request->input('account') ;
+        $password1 = $request->input('password1') ;
+        $password2 = $request->input('password2') ;
+        $user_name =  $request->input('username') ;
+
+        /*
+         * 利用 Validator 檢驗參數, 失敗時會帶 $errors 至 View
+         */
+        $validator = Validator::make($request->all(), [
+            'account' => 'required|min:3|max:12',
+            'password1' => 'required|min:3|max:10',
+            'password2' => 'required|min:3|max:10',
+            'username' => 'required|min:3|max:20',
+        ]);
+
+        if ($validator->fails()) {
+            $request->flashExcept(['password1', 'password2']) ;
+            return redirect()
+                ->route('member.create')->withErrors($validator)
+                ->withInput()->with('status', '帳號長度必須大於 3、密碼必須相等') ;
+        }
+
+        // 模擬參數檢查: 導回新增會員頁面 並帶入原來的 $request 以及新增 session 變數 status
+        if (strlen($account) <= 3 || empty($password1) || empty($password2) || $password1 !== $password2) {
+            // $request->flashOnly(['account', 'username']) ;
+            $request->flashExcept(['password1', 'password2']) ;
+            return redirect()->route('member.create')->withInput()->with('status', '帳號長度必須大於 3、密碼必須相等') ;
+            //return redirect('member/create')->withInput() ;
+        } 
+
+        try {
+            if ($password1 !== $password2) {
+                throw new \Exception("Password are not equal.\r\n", 1) ;
+            }
+            $password_hash = password_hash($password2, PASSWORD_BCRYPT, ["cost" => 12]) ;
+
+            $m = new Member ;
+            $m->account = $account ;
+            $m->password = $password_hash ;
+            $m->user_name = $user_name ;
+            $m->supervisor_id = 0 ;
+            $m->save() ;
+
+            // DB::table('member')->insert([
+            //     'account' => $account,
+            //     'password' => $password_hash,
+            //     'user_name' => $user_name,
+            //     'supervisor_id' => 0,
+            // ]) ;
+
+            return redirect()->route('member.index') ;
+
+        }  catch (\Exception $e) {
+            echo "Add User Fail: ".$e->getMessage() ;
+        }
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function show($id)
+    {
+        $member = $this->member_rep->getFirstMemberById($id) ;
+        return view('member.show', ['member' => $member ]) ;
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function edit($id)
+    {
+        $member = $this->member_rep->getFirstMemberById($id) ;
+        return view('member.edit', ['member' => $member ]) ;
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function update(Request $request, $id)
+    {
+        $user_id = $id ;
+        $password1 = $request->input('password1') ;
+        $password2 = $request->input('password2') ;
+        $user_name = $request->input('username') ;
+
+        try {
+            if ($password1 !== $password2) {
+                throw new \Exception("Password are not equal.\r\n", 1) ;
+            }
+            $password_hash = password_hash($password2, PASSWORD_BCRYPT, ["cost" => 12]) ;
+
+            if (DB::table('member')->where('user_id', '=', $id)->update(['user_name' => $user_name, 'password' => $password_hash])) {
+               return redirect()->route('member.index') ; 
+            }
+            else {
+                echo "Error" ;
+            }
+        }  catch (\Exception $e) {
+            echo "Add User Fail: ".$e->getMessage() ;
+        }
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  int  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy($id)
+    {
+        if (Member::find($id)->delete()) {
+        // if (DB::table('member')->where('user_id', '=', $id)->delete()) {
+            // return redirect()->route('member.index') ;
+            return redirect()->back() ;
+        }
+        else {
+            echo "Error" ;
+        }
+    }
+
+    /**
+     * Management Log.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function log(Request $request)
+    {
+        $perpage = config('henwen.paginate.member.log', 10) ;
+        $member_logs = MemberLogs::paginate($perpage) ;
+        return view('member.log', ['member_logs' => $member_logs]) ;
+    }
+}
