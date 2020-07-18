@@ -37,4 +37,9 @@ return [
 			'user_group' => 10, // user_group Table
 		],
 	],
+
+	'line' => [
+		'client_id' => 'TJa8634yOQRVxLn90k7RPT',
+		'client_secret' => 'KlVRL5yyH7FgEzfNz2FLSIIbgLBcxCU4vnNv9V6PTqa',
+	],
 ] ;

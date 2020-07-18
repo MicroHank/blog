@@ -15,10 +15,10 @@ class CreateLinesTable extends Migration
     {
         Schema::create('line', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('client_id')->nullable();
-            $table->string('client_secret')->nullable();
-            $table->string('code')->nullable();
+            $table->string('user_id')->nullable();
             $table->string('access_token')->nullable();
+            $table->string('target_type')->nullable();
+            $table->string('target')->nullable();
         });
     }
 

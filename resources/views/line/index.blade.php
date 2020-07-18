@@ -32,6 +32,11 @@
             <label>送出訊息至 Line Notify 帳號</label>
             <form method="POST" action="{{ route('line.send') }}">
                 {{ csrf_field() }}
+                <select name='user_id'>
+                    @foreach ($line_notify as $line)
+                        <option value='{{$line->user_id}}'>{{$line->name}}</option>
+                    @endforeach
+                </select>
                 <input type="text" name="message" />
                 <input type="submit" value="{{ trans('global.action.send') }}" />
             </form>
