@@ -18,4 +18,10 @@ return [
 			'now' => 'Weather Now',
 		],
 	],
+	'third' => [
+		'main' => 'Third Party API',
+		'line' => [
+			'notify' => 'Line Notify',
+		],
+	],
 ];

@@ -9,6 +9,7 @@ return [
 		'update' => 'Update',
 		'generate' => 'Generate',
 		'clean' => 'Clean',
+		'send' => 'Send',
 	],
 	'seeder' => [
 		'user' => 'User Seeder',

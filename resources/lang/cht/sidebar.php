@@ -18,4 +18,10 @@ return [
 			'now' => '現在天氣',
 		],
 	],
+	'third' => [
+		'main' => '第三方 API',
+		'line' => [
+			'notify' => 'Line 通知',
+		],
+	],
 ];

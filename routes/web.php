@@ -66,6 +66,12 @@ Route::group(['middleware' => ['language']], function () {
 	// API
 	Route::get('api/getAllMember', 'ApiController@getAllMember');
 
+	// Line Notify API
+	Route::get('line/index', 'LineController@index')->name('line.index');
+	Route::post('line/getCode', 'LineController@getCode'); // 取得 code
+	Route::post('line/checkAccessToken', 'LineController@checkAccessToken')->name('line.checkAccessToken'); // 檢查 Access Token
+	Route::post('line/send', 'LineController@sendNotify')->name('line.send'); // 送出訊息至 Line
+
 });
 
 Auth::routes();

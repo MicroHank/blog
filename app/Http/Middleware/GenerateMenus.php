@@ -40,6 +40,10 @@ class GenerateMenus
             $opendata = $menu->add(trans('sidebar.opendata.weather.main'), array('url'=>null))->data('icon','fa fa-database')->data('show',true);
             $opendata->add(trans('sidebar.opendata.weather.now'), array('url' => 'opendata/weather/now'))->data('show',true);
 
+            //第三方 API
+            $third_party = $menu->add(trans('sidebar.third.main'), array('url'=>null))->data('icon','fa fa-commenting-o')->data('show',true);
+            $third_party->add(trans('sidebar.third.line.notify'), array('url' => 'line/index'))->data('show',true);
+
             
         });
 
