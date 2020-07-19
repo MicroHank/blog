@@ -10,6 +10,7 @@ return [
 		'generate' => 'Generate',
 		'clean' => 'Clean',
 		'send' => 'Send',
+		'revoke' => 'Revoke',
 	],
 	'seeder' => [
 		'user' => 'User Seeder',

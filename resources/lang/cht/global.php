@@ -10,6 +10,7 @@ return [
 		'generate' => '產生',
 		'clean' => '清除',
 		'send' => '送出',
+		'revoke' => '註銷',
 	],
 	'seeder' => [
 		'user' => '填充使用者資料',

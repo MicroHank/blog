@@ -29,29 +29,58 @@
                     <input type="submit" class="btn btn-info" value="Check Access Token" />
                 </form>
             </p>
-            <label>送出訊息至 Line Notify 帳號</label>
-            <form method="POST" action="{{ route('line.send') }}">
-                {{ csrf_field() }}
-                <select name='user_id'>
-                    @foreach ($line_notify as $line)
-                        <option value='{{$line->user_id}}'>{{$line->name}}</option>
-                    @endforeach
-                </select>
-                <input type="text" name="message" />
-                <input type="submit" value="{{ trans('global.action.send') }}" />
-            </form>
+            <p>
+                <form method="POST" action="{{ route('line.send') }}">
+                    {{ csrf_field() }}
+                    <label>送出訊息至 Line Notify 帳號</label>
+                    <select name='user_id'>
+                        @foreach ($line_notify as $line)
+                            <option value='{{$line->user_id}}'>{{$line->name}}</option>
+                        @endforeach
+                    </select>
+                    <input type="textarea" name="message" />
+                    <input type="submit" value="{{ trans('global.action.send') }}" />
+                </form>
+            </p>
+
+            <table class="table">
+                <tr>
+                    <th>ID</th>
+                    <th>User ID</th>
+                    <th>Username</th>
+                    <th>TargetType</th>
+                    <th>Target</th>
+                    <th>Revoke</th>
+                </tr>
+                @foreach ($line_notify as $line)
+                <tr>
+                    <td>{{ $line->id }}</td>
+                    <td>{{ $line->user_id }}</td>
+                    <td>{{ $line->name }}</td>
+                    <td>{{ $line->target_type }}</td>
+                    <td>{{ $line->target }}</td>
+                    <td>
+                        <form method="POST" action="">
+                            {{ csrf_field() }}
+                            {{ method_field('DELETE') }}
+                            <input type="submit" value="{{ trans('global.action.revoke') }}" />
+                        </form>
+                    </td>
+                </tr>
+                @endforeach
+            </table>
         </div>
 
         <script>
         function lineNotifyoAuth2() {
-            var URL = 'https://notify-bot.line.me/oauth/authorize?';
-            URL += 'response_type=code';
-            URL += '&scope=notify';
-            URL += '&response_mode=form_post';
-            URL += '&client_id=TJa8634yOQRVxLn90k7RPT';
-            URL += '&redirect_uri=http://127.0.0.1/laravel/blog/public/line/getCode';
-            URL += '&state=abcd-abcd';
-            window.location.href = URL;
+            var url = 'https://notify-bot.line.me/oauth/authorize?' ;
+            url += 'response_type=code' ;
+            url += '&scope=notify' ;
+            url += '&response_mode=form_post' ;
+            url += '&client_id=TJa8634yOQRVxLn90k7RPT' ;
+            url += '&redirect_uri=http://127.0.0.1/laravel/blog/public/line/getCode' ;
+            url += '&state=abcd-abcd';
+            window.location.href = url ;
         }
         </script>
     @endsection
