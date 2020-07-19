@@ -11,6 +11,7 @@ return [
 		'clean' => '清除',
 		'send' => '送出',
 		'revoke' => '註銷',
+		'check' => '確認',
 	],
 	'seeder' => [
 		'user' => '填充使用者資料',

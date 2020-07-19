@@ -107,9 +107,9 @@ class LineController extends Controller
      *
      * return redirect
      */
-    public function checkAccessToken(NotifyRepository $notify_rep)
+    public function checkAccessToken(NotifyRepository $notify_rep, $user_id)
     {
-        $line = Line::where('user_id', Auth::user()->id) ;
+        $line = Line::where('user_id', $user_id) ;
         
         if (count($line->first()) > 0) {
             $data = $line->first() ;
@@ -121,7 +121,36 @@ class LineController extends Controller
         
         $result = $notify_rep->getAccessTokenStatus($access_token) ;
 
-        $message = $result['message'].': 你的訂閱為 ('.$result['targetType'].') '.$result['target'] ;
+        $message = $result['message'].': 此訂閱為 ('.$result['targetType'].') '.$result['target'] ;
+
+        return redirect()->back()->with('message', $message) ;
+    }
+
+    /**
+     * 註銷 Access Token
+     *
+     * return redirect
+     */
+    public function revokeAccessToken(NotifyRepository $notify_rep, $user_id)
+    {
+        $line = Line::where('user_id', $user_id) ;
+        
+        if (count($line->first()) > 0) {
+            $data = $line->first() ;
+            $access_token = $data['access_token'] ;
+        }
+        else {
+            return redirect()->back()->with('message', '尚未訂閱 Line Notify 連動') ;
+        }
+        
+        $result = $notify_rep->revokeAccessToken($access_token) ;
+
+        // 註銷成功, 刪除 line Table 儲存的 User Access Token 資料
+        if ($result['status'] == 200) {
+            $line->delete() ;
+        }
+
+        $message = '註銷 Access Token 結束: '. $result['message'] ;
 
         return redirect()->back()->with('message', $message) ;
     }

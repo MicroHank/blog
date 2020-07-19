@@ -11,6 +11,7 @@ return [
 		'clean' => 'Clean',
 		'send' => 'Send',
 		'revoke' => 'Revoke',
+		'check' => 'Check',
 	],
 	'seeder' => [
 		'user' => 'User Seeder',

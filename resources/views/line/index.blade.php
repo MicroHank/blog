@@ -24,9 +24,9 @@
                 <input type="button" class="btn btn-primary" value="連結到 LineNotify 訂閱" onclick="lineNotifyoAuth2();" />
             </p>
             <p>
-                <form method="POST" action="{{ route('line.checkAccessToken') }}">
+                <form method="POST" action="{{ route('line.checkAccessToken', Auth::user()->id) }}">
                     {{ csrf_field() }}
-                    <input type="submit" class="btn btn-info" value="Check Access Token" />
+                    <input type="submit" class="btn btn-info" value="Check My Access Token" />
                 </form>
             </p>
             <p>
@@ -50,6 +50,7 @@
                     <th>Username</th>
                     <th>TargetType</th>
                     <th>Target</th>
+                    <th>Check Access Token</th>
                     <th>Revoke</th>
                 </tr>
                 @foreach ($line_notify as $line)
@@ -60,10 +61,15 @@
                     <td>{{ $line->target_type }}</td>
                     <td>{{ $line->target }}</td>
                     <td>
-                        <form method="POST" action="">
+                        <form method="POST" action="{{ route('line.checkAccessToken', $line->user_id) }}">
                             {{ csrf_field() }}
-                            {{ method_field('DELETE') }}
-                            <input type="submit" value="{{ trans('global.action.revoke') }}" />
+                            <input type="submit" class="btn btn-info" value="{{ trans('global.action.check') }}" />
+                        </form>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ route('line.revokeAccessToken', $line->user_id) }}">
+                            {{ csrf_field() }}
+                            <input type="submit" class="btn btn-danger" value="{{ trans('global.action.revoke') }}" />
                         </form>
                     </td>
                 </tr>

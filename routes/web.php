@@ -69,7 +69,8 @@ Route::group(['middleware' => ['language']], function () {
 	// Line Notify API
 	Route::get('line/index', 'LineController@index')->name('line.index');
 	Route::post('line/getCode', 'LineController@getCode'); // 取得 code
-	Route::post('line/checkAccessToken', 'LineController@checkAccessToken')->name('line.checkAccessToken'); // 檢查 Access Token
+	Route::post('line/checkAccessToken/{user_id}', 'LineController@checkAccessToken')->name('line.checkAccessToken');
+	Route::post('line/revokeAccessToken/{user_id}', 'LineController@revokeAccessToken')->name('line.revokeAccessToken');
 	Route::post('line/send', 'LineController@sendNotify')->name('line.send'); // 送出訊息至 Line
 
 });

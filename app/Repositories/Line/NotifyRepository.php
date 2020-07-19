@@ -49,7 +49,29 @@
 	        ));
 	        curl_setopt($curlobj, CURLOPT_RETURNTRANSFER, true) ;
 	        curl_setopt($curlobj, CURLOPT_TIMEOUT, 10) ;
-	        curl_setopt($curlobj, CURLOPT_POST, false);
+	        curl_setopt($curlobj, CURLOPT_POST, false) ;
+	        curl_setopt($curlobj, CURLOPT_URL, $url) ;
+	        $output = curl_exec($curlobj) ;
+	        return json_decode($output, true) ;
+	    }
+	    
+	    /**
+	     * 註銷 Access Token
+	     * @param string $access_token, e.g. xjSLYAbA2tegHNR1MRTwcBKKhCP7UNlN6il89OarDNg
+	     * 
+	     * @return Array ['status' => 200, 'message' => 'ok'], ['status' => 401, 'message' => 'Invalid access token']
+	     */
+	    public function revokeAccessToken($access_token)
+	    {
+	        $url = 'https://notify-api.line.me/api/revoke' ;
+
+	        $curlobj = curl_init() ;
+	        curl_setopt($curlobj, CURLOPT_HTTPHEADER, array(
+	            'Authorization: Bearer '.$access_token,
+	        ));
+	        curl_setopt($curlobj, CURLOPT_RETURNTRANSFER, true) ;
+	        curl_setopt($curlobj, CURLOPT_TIMEOUT, 10) ;
+	        curl_setopt($curlobj, CURLOPT_POST, true) ;
 	        curl_setopt($curlobj, CURLOPT_URL, $url) ;
 	        $output = curl_exec($curlobj) ;
 	        return json_decode($output, true) ;
