@@ -9,6 +9,7 @@
 
 		/**
 		 * 執行 oAuth 流程
+		 * curl Method = POST
 		 * URL: https://notify-bot.line.me/oauth/token
 		 *
 		 * @return Array ['status' => 200, 'access_toke' => 'xxxxx']
@@ -35,6 +36,7 @@
 
 		/**
 	     * 取得 Access Token 的狀態
+	     * curl Method = GET
 	     * @param string $access_token, e.g. xjSLYAbA2tegHNR1MRTwcBKKhCP7UNlN6il89OarDNg
 	     * 
 	     * @return Array ['status' => 200, 'message' => 'ok', 'targetType' => 'User', 'target' => 'My Line Account']
@@ -57,6 +59,7 @@
 	    
 	    /**
 	     * 註銷 Access Token
+	     * curl Method = POST
 	     * @param string $access_token, e.g. xjSLYAbA2tegHNR1MRTwcBKKhCP7UNlN6il89OarDNg
 	     * 
 	     * @return Array ['status' => 200, 'message' => 'ok'], ['status' => 401, 'message' => 'Invalid access token']
@@ -79,6 +82,7 @@
 
 	    /**
 	     * 寄送通知
+	     * curl Method = POST
 	     * @param string $access_token, e.g. xjSLYAbA2tegHNR1MRTwcBKKhCP7UNlN6il89OarDNg
 	     * @param string $message, e.g. Hello World
 	     * 
