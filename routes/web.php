@@ -73,6 +73,8 @@ Route::group(['middleware' => ['language']], function () {
 	Route::post('line/revokeAccessToken/{user_id}', 'LineController@revokeAccessToken')->name('line.revokeAccessToken');
 	Route::post('line/send', 'LineController@sendNotify')->name('line.send'); // 送出訊息至 Line
 
+	// SMTP Send Mail Test
+	Route::get('mail/send', 'MailController@send')->name('mail.send');
 });
 
 Auth::routes();

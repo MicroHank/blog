@@ -42,4 +42,15 @@ return [
 		'client_id' => 'TJa8634yOQRVxLn90k7RPT',
 		'client_secret' => 'KlVRL5yyH7FgEzfNz2FLSIIbgLBcxCU4vnNv9V6PTqa',
 	],
+
+	'smtp' => [
+		'host' => 'smtp.gmail.com',
+		'port' => 25,
+		'login_user' => 'henwen.chang@gmail.com',
+		'login_passwd' => 'lqbsahxpxqmcwdwo',
+		'smtp_auth' => true,
+		'smtp_debug' => 2,
+		'is_ssl' => false,
+		'is_smtp' => true,
+	],
 ] ;
