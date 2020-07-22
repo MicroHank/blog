@@ -12,6 +12,7 @@ return [
 		'send' => 'Send',
 		'revoke' => 'Revoke',
 		'check' => 'Check',
+		'download' => 'Download',
 	],
 	'seeder' => [
 		'user' => 'User Seeder',

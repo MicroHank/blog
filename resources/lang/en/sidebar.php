@@ -24,4 +24,9 @@ return [
 			'notify' => 'Line Notify',
 		],
 	],
+	'report' => [
+		'main' => 'Report',
+		'csv' => 'CSV',
+		'pdf' => 'PDF',
+	],
 ];

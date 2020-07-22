@@ -44,6 +44,10 @@ class GenerateMenus
             $third_party = $menu->add(trans('sidebar.third.main'), array('url'=>null))->data('icon','fa fa-commenting-o')->data('show',true);
             $third_party->add(trans('sidebar.third.line.notify'), array('url' => 'line/index'))->data('show',true);
 
+            //報表系列
+            $report = $menu->add(trans('sidebar.report.main'), array('url'=>null))->data('icon','fa fa-file-pdf-o')->data('show',true);
+            $report->add(trans('sidebar.report.csv'), array('url' => 'report/csv'))->data('show',true);
+            $report->add(trans('sidebar.report.pdf'), array('url' => 'report/pdf'))->data('show',true);
             
         });
 

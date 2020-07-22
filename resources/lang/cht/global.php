@@ -12,6 +12,7 @@ return [
 		'send' => '送出',
 		'revoke' => '註銷',
 		'check' => '確認',
+		'download' => '下載',
 	],
 	'seeder' => [
 		'user' => '填充使用者資料',

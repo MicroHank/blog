@@ -6,6 +6,7 @@
 /public/Highcharts
 /public/js
 /public/resources
+/public/csv
 /storage/*.key
 /vendor
 /.idea

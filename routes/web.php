@@ -75,6 +75,12 @@ Route::group(['middleware' => ['language']], function () {
 
 	// SMTP Send Mail Test
 	Route::get('mail/send', 'MailController@send')->name('mail.send');
+
+	// Report
+	Route::get('report/csv', 'ReportController@csv')->name('report.csv');
+	Route::get('report/csv/download', 'ReportController@downloadCSV')->name('report.downloadCSV');
+	Route::get('report/pdf', 'ReportController@pdf')->name('report.pdf');
+	Route::get('report/pdf/download', 'ReportController@downloadPDF')->name('report.downloadPDF');
 });
 
 Auth::routes();
