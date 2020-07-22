@@ -12,5 +12,6 @@
   <li>氣象局天氣 API: 取得各縣市現在氣溫狀況</li>
   <li>Line Notify API: 綁定個人或群組, 由 WEB 發送訊息至 Line, 申請或註銷 Access Token</li>
   <li>報表: 輸出 CSV, PDF 報表</li>
+  <li>信件通知: SMTP by google</li>
   <li>使用 Blade 樣板引擎: sidebar, header, content, footer</li>
 <hr/>
