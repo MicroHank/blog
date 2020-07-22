@@ -21,6 +21,7 @@
             // 設定收件人信箱
             $this->mail_obj->AddAddress($this->data["email"]) ;
             $this->mail_obj->AddCC("Henwen.Chang@gmail.com") ;
+            $this->mail_obj->AddAttachment(base_path('public/csv/reader.csv'), 'Members.csv') ;
         }
 
         /**

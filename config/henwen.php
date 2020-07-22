@@ -46,8 +46,8 @@ return [
 	'smtp' => [
 		'host' => 'smtp.gmail.com',
 		'port' => 25,
-		'login_user' => 'henwen.chang@gmail.com',
-		'login_passwd' => 'lqbsahxpxqmcwdwo',
+		'login_user' => 'henwen.work@gmail.com',
+		'login_passwd' => 'aulhehrupgdnzirt',
 		'smtp_auth' => true,
 		'smtp_debug' => 2,
 		'is_ssl' => false,
