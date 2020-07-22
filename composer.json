@@ -9,6 +9,7 @@
         "laravel/framework": "5.4.*",
         "laravel/tinker": "~1.0",
         "lavary/laravel-menu": "^1.7",
+        "league/csv": "^8.2",
         "phpmailer/phpmailer": "^6.1"
     },
     "require-dev": {
