@@ -14,4 +14,6 @@
   <li>報表: 輸出 CSV, PDF 報表</li>
   <li>信件通知: SMTP by google</li>
   <li>使用 Blade 樣板引擎: sidebar, header, content, footer</li>
+  <li>語系切換 & Middleware</li>
+  <li>Menu 物件</li>
 <hr/>
