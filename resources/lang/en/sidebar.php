@@ -24,6 +24,10 @@ return [
 			'notify' => 'Line Notify',
 		],
 	],
+	'mail' => [
+		'main' => 'Mail Notify',
+		'notify' => 'Send Notify',
+	],
 	'report' => [
 		'main' => 'Report',
 		'csv' => 'CSV',

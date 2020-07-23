@@ -24,6 +24,10 @@ return [
 			'notify' => 'Line 通知',
 		],
 	],
+	'mail' => [
+		'main' => '寄信',
+		'notify' => '通知信',
+	],
 	'report' => [
 		'main' => '報表',
 		'csv' => 'CSV',

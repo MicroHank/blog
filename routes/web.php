@@ -74,7 +74,8 @@ Route::group(['middleware' => ['language']], function () {
 	Route::post('line/send', 'LineController@sendNotify')->name('line.send'); // 送出訊息至 Line
 
 	// SMTP Send Mail Test
-	Route::get('mail/send', 'MailController@send')->name('mail.send');
+	Route::get('mail/index', 'MailController@index')->name('mail.index');
+	Route::post('mail/send', 'MailController@send')->name('mail.send');
 
 	// Report
 	Route::get('report/csv', 'ReportController@csv')->name('report.csv');

@@ -150,11 +150,10 @@
         {
             if ($this->mail_obj->Send()) {
             	Log::info("寄信成功", array("email" => $this->data["email"])) ;
-            	echo "寄信成功" ;
             }
             else {
-               Log::errot("寄信失敗", array("email" => $this->data["email"])) ;
-               echo $this->mail_obj->ErrorInfo . "\n\n";
+               Log::error("寄信失敗", array("email" => $this->data["email"])) ;
+               //echo $this->mail_obj->ErrorInfo;
             }
         }
     }
