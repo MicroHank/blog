@@ -186,7 +186,11 @@ class LineController extends Controller
             
             // Without :
             if (! strpos($text, ':')) {
-                if ($text === 'users') {
+                if ($text === 'help') {
+                    $message = 'command -> users, members, user:Username, sendmail:EmailAddress' ;
+                }
+
+                else if ($text === 'users') {
                     $count = User::all()->count() ;
                     $message = '註冊人數: '.$count.' 人' ;
                 }
