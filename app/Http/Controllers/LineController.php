@@ -4,9 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Models\Line;
+use App\Models\User;
+use App\Models\Member;
 use App\Repositories\Line\NotifyRepository;
+use App\Repositories\Mail\LineChatbotRepository;
 
 class LineController extends Controller
 {
@@ -153,5 +157,105 @@ class LineController extends Controller
         $message = '註銷 Access Token 結束: '. $result['message'] ;
 
         return redirect()->back()->with('message', $message) ;
+    }
+
+    /**
+     * Line Bot callback URL
+     */
+    public function reply()
+    {
+        $channel_access_token = config('line.channel_access_token') ;
+    
+        // Receive Json String
+        $receive_string = file_get_contents('php://input') ;
+        $obj = json_decode($receive_string, true) ;
+        Log::info($receive_string) ;
+
+        // Data from receive string
+        $eventsType = $obj['events'][0]['type'] ; // Text: (message) User (follow, unfollow) Group (join, leave)
+        $userId = isset($obj['events'][0]['source']['userId']) ? $obj['events'][0]['source']['userId'] : 0 ; // 發送訊息的使用者編號
+        $groupId = isset($obj['events'][0]['source']['groupId']) ? $obj['events'][0]['source']['groupId'] : 0 ; // 在哪個群組發送
+        $type = $obj['events'][0]['source']['type'] ; // 回傳值: user, group
+        $replyToken = $obj['events'][0]['replyToken'] ; // 回應的 Token, 用於 reply api
+        $text = strtolower($obj['events'][0]['message']['text']) ; // 使用者傳送的訊息
+        Log::info($text) ;
+
+        // 處理訊息
+        if ($eventsType === 'message') {
+            $message = '' ;
+            
+            // Without :
+            if (! strpos($text, ':')) {
+                if ($text === 'users') {
+                    $count = User::all()->count() ;
+                    $message = '註冊人數: '.$count.' 人' ;
+                }
+
+                else if ($text === 'members') {
+                    $count = Member::all()->count() ;
+                    $message = '註冊會員: '.$count.' 人' ;
+                }
+
+                // else: Reply same text
+                else {
+                    $message = $text ;
+                }
+            }
+
+            // With :
+            else if (strpos($text, ':') > 0) {
+                // user:henwen -> $action = user, $value = henwen
+                list($action, $value) = preg_split('/:/', $text) ;
+
+                // 查詢 user Table
+                if ($action === 'user') {
+                    $user = User::where('name' , $value)->get() ;
+                    $message = json_encode($user, JSON_UNESCAPED_UNICODE) ;
+                }
+
+                // 寄信 sendmail:email@xxx.com
+                else if ($action === 'sendmail') {
+                    $data = ["email" => $value] ; 
+                    $smtp = config('henwen.smtp') ;
+
+                    $mr = new LineChatbotRepository() ;
+                    $mr->setBasic($smtp["host"], $smtp["port"], $smtp["login_user"], $smtp["login_passwd"]) ;
+                    $mr->setFrom("henwen.chang@gmail.com", "Line Chat Bot", "這是一封由 Line Chat Bot 觸發的測試信") ;
+                    $mr->setPHPMailer($smtp["is_smtp"], $smtp["smtp_auth"], $smtp["smtp_debug"], $smtp["is_ssl"]) ;
+                    $mr->send($data) ;
+                    $message = 'Send Mail to : '. $value ;
+                }
+
+                // else: Reply same text
+                else {
+                    $message = $text ;
+                }
+            }
+
+            if (! empty($message)) {
+                $data = [
+                    'replyToken' => $replyToken,
+                    'messages' => [
+                        [
+                            'type' => 'text',
+                            'text' => $message,
+                        ]
+                    ]
+                ] ;
+
+                // Reply API
+                $ch = curl_init() ;
+                curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/message/reply') ;
+                curl_setopt($ch, CURLOPT_POST, true) ;
+                curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
+                curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)) ;
+                curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                    'Content-Type: application/json',
+                    'Authorization: Bearer ' . $channel_access_token
+                ]) ;
+                $result = curl_exec($ch) ;
+                curl_close($ch) ;
+            }
+        }
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use App;
 use Lavary\Menu\Menu;
+use Config;
 
 class GenerateMenus
 {

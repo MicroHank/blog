@@ -7,6 +7,7 @@
 /public/js
 /public/resources
 /public/csv
+/config/line.php
 /storage/*.key
 /vendor
 /.idea

@@ -73,6 +73,9 @@ Route::group(['middleware' => ['language']], function () {
 	Route::post('line/revokeAccessToken/{user_id}', 'LineController@revokeAccessToken')->name('line.revokeAccessToken');
 	Route::post('line/send', 'LineController@sendNotify')->name('line.send'); // 送出訊息至 Line
 
+	// Line Chat Bot: reply webhook callback url
+	Route::post('line/reply', 'LineController@reply')->name('line.reply');
+
 	// SMTP Send Mail Test
 	Route::get('mail/index', 'MailController@index')->name('mail.index');
 	Route::post('mail/send', 'MailController@send')->name('mail.send');
