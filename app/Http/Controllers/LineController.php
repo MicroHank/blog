@@ -376,8 +376,26 @@ class LineController extends Controller
                 }
             } // End-$phase[0] == 'mail'
 
+            else if ($phase[0] == 'sql') {
+                if (! isset($phase[1])) {
+                    $message = "請寫不含分號 ; 的有效的 SQL (SELECT Only): " ;
+                    $user->phase = join(',', $phase) ;
+                }
+                else {
+                    try {
+                        // 需要檢查與過濾 SQL 語法
+                        $result = DB::select($phase[1]) ;
+                        $message = json_encode($result, JSON_UNESCAPED_UNICODE) ;
+                    } catch (\Exception $e) {
+                        $message = json_encode($e->getMessage(), JSON_UNESCAPED_UNICODE) ;
+                    } finally {
+                        $user->phase = '' ;
+                    }
+                }
+            } // End-$phase[0] == 'sql'
+
             else {
-                $message = "指令 'member' 會員管理, 指令 'user' 使用者管理, 指令 'mail' 信件通知" ;
+                $message = "指令 'member' 會員管理, 指令 'user' 使用者管理, 指令 'mail' 信件通知, 指令 'sql' 可執行 SQL 語法" ;
             }
 
             // 儲存使用者狀態: phase, send_time
