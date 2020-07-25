@@ -11,6 +11,8 @@
 	use App\Models\Group;
 	use App\Models\UserGroup;
 	use App\Models\Member;
+	use App\Models\Linebot;
+	use Validator;
 
 	// Jobs
 	use App\Jobs\TestJob;
@@ -33,7 +35,21 @@
 	     */
 	    public function index()
 	    {
-	    	var_dump(Member::all()->pluck('user_id')->toArray()) ;
+	    	$userId = 'Udde9e8c3b07d51792c8f57a329aa4ee8' ;
+	    	$send_time = Carbon::now() ;
+	    	// 從 linebot Table 取得 userId 目前的 phase string
+	        if ($user = Linebot::find($userId)) {
+	        	$last_send_time = $user->send_time ;
+	            $phase = $send_time->diffInSeconds($last_send_time) < 60 ? $user->phase : '' ;
+	        }
+	        else {
+	            $user = new Linebot ;
+	            $user->userId = $userId ;
+	            $phase = '' ;
+	        }
+	        $user->send_time = $send_time->toDateTimeString() ;
+	        exit ;
+	    	//var_dump(Member::all()->pluck('user_id')->toArray()) ;
 	    	// try {
 	    	// 	$output = Artisan::call('db:seed', ['--class' => 'GroupsTableSeeder']) ;
 	    	// 	var_dump($output) ;
