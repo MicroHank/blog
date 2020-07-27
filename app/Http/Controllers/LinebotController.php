@@ -286,4 +286,140 @@ class LinebotController extends Controller
         } // End 送出訊息
 
     } // End reply()
+
+    // 查詢已建立的 Rich Menu ID
+    public function listRichmenu()
+    {
+        $ch = curl_init() ;
+        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu/list') ;
+        curl_setopt($ch, CURLOPT_POST, false) ;
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' .config('line.channel_access_token')
+        ]) ;
+        $result = curl_exec($ch) ;
+        curl_close($ch) ;
+        var_dump($result) ;
+    }
+
+    // 建立 Rich Menu 並取得一個 Rich Menu ID
+    public function createRichmenu()
+    {
+        $data = [
+            'size' => [
+                'width' => 800,
+                'height' => 270,
+            ],
+            'selected' => false,
+            'name' => 'Henwen Richmenu',
+            'chatBarText' => 'Tap Here',
+            'areas' => [
+                [
+                    'bounds' => [
+                        'x' => 0,
+                        'y' => 0,
+                        'width' => 266,
+                        'height' => 270,
+                    ],
+                    'action' => [
+                        'type' => 'message',
+                        'text' => 'user',
+                    ],
+                ],
+                [
+                    'bounds' => [
+                        'x' => 266,
+                        'y' => 0,
+                        'width' => 266,
+                        'height' => 270,
+                    ],
+                    'action' => [
+                        'type' => 'message',
+                        'text' => 'henwen.chang@gmail.com',
+                    ],
+                ],
+                [
+                    'bounds' => [
+                        'x' => 532,
+                        'y' => 0,
+                        'width' => 266,
+                        'height' => 270,
+                    ],
+                    'action' => [
+                        'type' => 'uri',
+                        'uri' => config('henwen.github_uri'),
+                    ],
+                ],
+            ],
+        ] ;
+
+        $ch = curl_init() ;
+        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu') ;
+        curl_setopt($ch, CURLOPT_POST, true) ;
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)) ;
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Content-Type: application/json',
+            'Authorization: Bearer ' .config('line.channel_access_token')
+        ]) ;
+        $result = curl_exec($ch) ;
+        curl_close($ch) ;
+        var_dump($result) ;
+    }
+
+    // 刪除 Rich Menu ID
+    public function deleteRichmenu()
+    {
+        $ch = curl_init() ;
+        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu/richmenu-9fe2c9b9be02eb2bad966e88e4b832ad') ;
+        curl_setopt($ch, CURLOPT_POST, false) ;
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE') ;
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' .config('line.channel_access_token')
+        ]) ;
+        $result = curl_exec($ch) ;
+        curl_close($ch) ;
+        var_dump($result) ;
+    }
+
+    // 上傳圖片至指定的 Rich Menu ID
+    public function uploadRichmenu()
+    {
+        $image = base_path('public/images/richmenu.jpg') ;
+
+        $data = [
+            'name' => 'richmenu.jpg',
+            'file' => $image,
+        ] ;
+        $ch = curl_init() ;
+        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu/'.config('line.rich_id').'/content') ;
+        curl_setopt($ch, CURLOPT_POST, true) ;
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data) ;
+        curl_setopt($ch,CURLOPT_POSTFIELDS, file_get_contents($image)) ;
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' .config('line.channel_access_token'),
+            'Content-Type: image/jpeg',
+            'Content-Length:'. filesize($image),
+        ]) ;
+        $result = curl_exec($ch) ;
+        curl_close($ch) ;
+        var_dump($result) ;
+    }
+
+    // 設定所有使用者, 使用指定 Rich Menu ID 的圖片
+    public function setDefaultRichmenu()
+    {
+        $ch = curl_init() ;
+        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/user/all/richmenu/'.config('line.rich_id')) ;
+        curl_setopt($ch, CURLOPT_POST, true) ;
+        curl_setopt($ch,CURLOPT_POSTFIELDS, "") ;
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            'Authorization: Bearer ' .config('line.channel_access_token'),
+        ]) ;
+        $result = curl_exec($ch) ;
+        curl_close($ch) ;
+        var_dump($result) ;
+    }
 }

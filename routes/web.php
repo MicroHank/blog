@@ -75,6 +75,11 @@ Route::group(['middleware' => ['language']], function () {
 
 	// Line Chat Bot: reply webhook callback url
 	Route::post('line/reply', 'LinebotController@reply')->name('line.reply');
+	Route::get('line/createRichmenu', 'LinebotController@createRichmenu');
+	Route::get('line/listRichmenu', 'LinebotController@listRichmenu');
+	Route::get('line/deleteRichmenu', 'LinebotController@deleteRichmenu');
+	Route::get('line/uploadRichmenu', 'LinebotController@uploadRichmenu');
+	Route::get('line/setDefaultRichmenu', 'LinebotController@setDefaultRichmenu');
 
 	// SMTP Send Mail Test
 	Route::get('mail/index', 'MailController@index')->name('mail.index');
