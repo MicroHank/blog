@@ -3,7 +3,9 @@
 return [
 	'name' => '張瀚文',
 
-	'from' => '屏東',
+	'github_uri' => 'https://github.com/MicroHank',
+	
+	'github_image' => 'https://avatars1.githubusercontent.com/u/5707499?s=460&u=c775ba6248dc33f4d7a27696ce7537224937c8ff&v=4',
 
 	'opendata' => [
 		'weather' => [
