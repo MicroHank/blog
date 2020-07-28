@@ -47,31 +47,50 @@
 
 			return $flex_messages = [
                 [
+                    // 回覆基本文字訊息使用參數
                     // 'type' => 'text', 
                     // 'text' => $message,
+
+                    // 回覆 flex 訊息
                     'type' => 'flex',
                     'altText' => 'This is a Flex Message',
                     'contents' => [
                         'type' => 'bubble',
                         'styles' => [
 	                    	'header' => [
-	                    		'backgroundColor' => '#ffaaaa',
+	                    		'backgroundColor' => '#92b7d1',
 	                    	],
 	                    	'body' => [
 	                    		'backgroundColor' => '#d3deed',
 	                    	],
+                            'footer' => [
+                                'backgroundColor' => '#dfe9f0',
+                            ],
 	                    ],
-	                    'hero' => [
-	                    	'type' => 'image',
-	                    	'url' => $github_image,
-	                    	'size' => 'full',
-	                    	// 'aspectRatio' => '2:1',
-	                    	'aspectMode' => 'cover',
-	                    	'action' => [
-	                    		'type' => 'uri',
-	                    		'uri' => $github_uri,
-	                    	],
-	                    ],
+	                    // 'hero' => [
+	                    // 	'type' => 'image',
+	                    // 	'url' => $github_image,
+	                    // 	'size' => 'full',
+	                    // 	// 'aspectRatio' => '2:1',
+	                    // 	'aspectMode' => 'cover',
+	                    // 	'action' => [
+	                    // 		'type' => 'uri',
+	                    // 		'uri' => $github_uri,
+	                    // 	],
+	                    // ],
+                        'header' => [
+                            'type' => 'box',
+                            'layout' => 'vertical',
+                            'contents' => [
+                                [
+                                    'type' => 'text',
+                                    'text' => '回傳結果',
+                                    'color' => '#446278',
+                                    'size' => 'xl',
+                                    'margin' => 'sm',
+                                ],
+                            ],
+                        ],
                         'body' => [
                             'type' => 'box',
                             'layout' => 'vertical',
@@ -154,10 +173,9 @@
                             'contents' => [
                                 [
                                     'type' => 'button',
-                                    'style' => 'primary',
                                     'action' => [
                                     	'type' => 'postback',
-                                    	'label' => 'Test postback',
+                                    	'label' => 'Postback',
                                     	'data' => 'action=test&param1=111&param2=222',
                                     ],
                                 ],

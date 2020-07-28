@@ -75,6 +75,7 @@ Route::group(['middleware' => ['language']], function () {
 
 	// Line Chat Bot: reply webhook callback url
 	Route::post('line/reply', 'LinebotController@reply')->name('line.reply');
+	// 處理 Richmenu
 	Route::get('line/createRichmenu', 'LinebotController@createRichmenu');
 	Route::get('line/listRichmenu', 'LinebotController@listRichmenu');
 	Route::get('line/deleteRichmenu', 'LinebotController@deleteRichmenu');

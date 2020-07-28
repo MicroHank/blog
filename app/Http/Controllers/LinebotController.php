@@ -3,9 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Validator;
 use App\Models\Line;
@@ -248,6 +246,48 @@ class LinebotController extends Controller
                 }
             } // End-$phase[0] == 'mail'
 
+            else if ($phase[0] == 'server') {
+                if (! isset($phase[1])) {
+                    $message = "指令 'disk' 查看硬碟空間\n指令 'task' 查看行程狀態" ;
+                    $user->phase = join(',', $phase) ;
+                }
+                
+                else {
+                    if ($phase[1] == 'disk') {
+                        $total_bytes = disk_total_space('C:') ;
+                        $free_bytes = disk_free_space('C:') ;
+                        $total_gb = $total_bytes ? round($total_bytes / pow(1024, 3), 3) : 0 ;
+                        $free_gb = $free_bytes ? round($free_bytes / pow(1024, 3), 3) : 0 ;
+                        $message = '本機硬碟(C:) 剩餘 '. $free_gb .' GB, 共 '. $total_gb .' GB'."\n" ;
+
+                        $total_bytes = disk_total_space('D:') ;
+                        $free_bytes = disk_free_space('D:') ;
+                        $total_gb = $total_bytes ? round($total_bytes / pow(1024, 3), 3) : 0 ;
+                        $free_gb = $free_bytes ? round($free_bytes / pow(1024, 3), 3) : 0 ;
+                        $message .= '本機硬碟(D:) 剩餘 '. $free_gb .' GB, 共 '. $total_gb .' GB' ;
+
+                        $user->phase = '' ;
+                    }
+                    else if ($phase[1] == 'task') {
+                        exec('tasklist /FI "Status eq Running" /FO csv 2>NUL', $task_list) ;
+                        array_shift($task_list) ;
+                        $message = '映像名稱, RAM使用量'."\n";
+                        foreach ($task_list as $task) {
+                            $data = preg_split('/,/', $task) ;
+                            $message .= '('. $data[0] .', '. $data[count($data)-1]. ")\n";
+                        }
+
+                        $user->phase = '' ;
+                    }
+                    else {
+                        $message = "指令 'disk' 查看硬碟空間\n指令 'task' 查看行程狀態" ;
+                        // 如果指令不正確, 則取出本次堆疊的指令
+                        array_pop($phase) ;
+                        $user->phase = join(',', $phase) ;
+                    }
+                }
+            } // End-$phase[0] == 'server'
+
             else if ($phase[0] == 'sql') {
                 if (! isset($phase[1])) {
                     $message = "請寫不含分號 ; 的有效的 SQL (SELECT Only): " ;
@@ -267,7 +307,11 @@ class LinebotController extends Controller
             } // End-$phase[0] == 'sql'
 
             else {
-                $message = "指令 'member' 會員管理\n指令 'user' 使用者管理\n指令 'mail' 信件通知\n指令 'sql' 可執行 SQL 語法" ;
+                $message  = "指令 'member' 會員管理\n" ;
+                $message .= "指令 'user' 使用者管理\n" ;
+                $message .= "指令 'mail' 信件通知\n" ;
+                $message .= "指令 'sql' 可執行 SQL 語法\n" ;
+                $message .= "指令 'server' 查看主機狀態" ;
             }
 
             // 儲存使用者狀態: phase, send_time
@@ -276,13 +320,11 @@ class LinebotController extends Controller
 
         // 送出訊息
         if (! empty($message)) {
-
              // 套用 Flex Message
             $flex_messages = $line_chatbot_rep->getFlexMessage($message) ;
 
             // 回覆訊息給 Line User
             $line_chatbot_rep->sendMessage($flex_messages, $replyToken) ;
-
         } // End 送出訊息
 
     } // End reply()
@@ -308,11 +350,11 @@ class LinebotController extends Controller
         $data = [
             'size' => [
                 'width' => 800,
-                'height' => 270,
+                'height' => 540,
             ],
             'selected' => false,
             'name' => 'Henwen Richmenu',
-            'chatBarText' => 'Tap Here',
+            'chatBarText' => '打開指令',
             'areas' => [
                 [
                     'bounds' => [
@@ -328,20 +370,56 @@ class LinebotController extends Controller
                 ],
                 [
                     'bounds' => [
-                        'x' => 266,
+                        'x' => 267,
                         'y' => 0,
                         'width' => 266,
                         'height' => 270,
                     ],
                     'action' => [
                         'type' => 'message',
-                        'text' => 'henwen.chang@gmail.com',
+                        'text' => 'member',
                     ],
                 ],
                 [
                     'bounds' => [
-                        'x' => 532,
+                        'x' => 533,
                         'y' => 0,
+                        'width' => 266,
+                        'height' => 270,
+                    ],
+                    'action' => [
+                        'type' => 'message',
+                        'text' => 'mail',
+                    ],
+                ],
+                [
+                    'bounds' => [
+                        'x' => 0,
+                        'y' => 270,
+                        'width' => 266,
+                        'height' => 270,
+                    ],
+                    'action' => [
+                        'type' => 'message',
+                        'text' => 'server',
+                    ],
+                ],
+                [
+                    'bounds' => [
+                        'x' => 267,
+                        'y' => 270,
+                        'width' => 266,
+                        'height' => 270,
+                    ],
+                    'action' => [
+                        'type' => 'message',
+                        'text' => 'sql',
+                    ],
+                ],
+                [
+                    'bounds' => [
+                        'x' => 533,
+                        'y' => 270,
                         'width' => 266,
                         'height' => 270,
                     ],
@@ -371,7 +449,7 @@ class LinebotController extends Controller
     public function deleteRichmenu()
     {
         $ch = curl_init() ;
-        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu/richmenu-9fe2c9b9be02eb2bad966e88e4b832ad') ;
+        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu/richmenu-bcd85dfee3c3f46a09fa5a07b964a7e6') ;
         curl_setopt($ch, CURLOPT_POST, false) ;
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE') ;
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
@@ -386,7 +464,7 @@ class LinebotController extends Controller
     // 上傳圖片至指定的 Rich Menu ID
     public function uploadRichmenu()
     {
-        $image = base_path('public/images/richmenu.jpg') ;
+        $image = base_path('public/images/richmenu2.jpg') ;
 
         $data = [
             'name' => 'richmenu.jpg',
