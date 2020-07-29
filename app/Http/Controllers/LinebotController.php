@@ -31,7 +31,6 @@ class LinebotController extends Controller
          * 處理 Callback
          * 從 Line callback 接收一串 JSON String
          */
-        // Receive Json String
         $receive_string = file_get_contents('php://input') ;
         $obj = json_decode($receive_string, true) ;
         Log::info($receive_string) ;
@@ -81,10 +80,16 @@ class LinebotController extends Controller
             }
             // 本次指令送出時間
             $user->send_time = $send_time->toDateTimeString() ;
-            
-            // 堆疊本次指令
-            $phase = ! empty($phase) ? preg_split('/,/', $phase) : [] ;
-            array_push($phase, $text) ;
+
+            // 回到第一階段
+            if (in_array($text, ['re', 'menu'])) {
+                $phase = [$text] ;
+            }
+            else {
+                // 堆疊本次指令
+                $phase = ! empty($phase) ? preg_split('/,/', $phase) : [] ;
+                array_push($phase, $text) ;
+            }
             //---------------------------------------------------------//
 
             $message = '' ;
@@ -92,7 +97,7 @@ class LinebotController extends Controller
             if ($phase[0] == 'member') {
 
                 if (! isset($phase[1])) {
-                    $message = "指令 'get' 取得會員\n指令 'delete' 刪除會員\n指令 'count' 會員總數" ;
+                    $message = $line_chatbot_rep->getMemberMenu() ;
                     $user->phase = join(',', $phase) ;
                 }
 
@@ -105,7 +110,8 @@ class LinebotController extends Controller
                         else {
                             if (Member::where('account', $phase[2])->count()) {
                                 $data = Member::where('account', $phase[2])->get() ;
-                                $message = '取得 ('.$phase[2].') 的會員資料:'."\n". json_encode($data, JSON_UNESCAPED_UNICODE)  ;
+                                $message = '取得 ('.$phase[2].') 的會員資料:'."\n" ;
+                                $message .= json_encode($data, JSON_UNESCAPED_UNICODE) ;
                             }
                             else {
                                 $message = '會員 ('. $phase[2] .') 不存在' ; 
@@ -130,12 +136,11 @@ class LinebotController extends Controller
                         }
                     }
                     else if ($phase[1] == 'count') {
-                        $count = Member::all()->count() ;
-                        $message = '註冊會員: '.$count.' 人' ;
+                        $message = '註冊會員: ' .Member::all()->count(). ' 人' ;
                         $user->phase = '' ;
                     }
                     else {
-                        $message = "指令 'get' 取得會員\n指令 'delete' 刪除會員\n指令 'count' 會員總數" ;
+                        $message = $line_chatbot_rep->getMemberMenu() ;
                         // 如果指令不正確, 則取出本次堆疊的指令: ['member', 'aaaa'] -> ['member']
                         array_pop($phase) ;
                         $user->phase = join(',', $phase) ;
@@ -145,7 +150,7 @@ class LinebotController extends Controller
 
             else if ($phase[0] == 'user') {
                 if (! isset($phase[1])) {
-                    $message = "指令 'get' 取得使用者\n指令 'delete' 刪除使用者\n指令 'count' 使用者總數" ;
+                    $message = $line_chatbot_rep->getUserMenu() ;
                     $user->phase = join(',', $phase) ;
                 }
 
@@ -158,7 +163,8 @@ class LinebotController extends Controller
                         else {
                             if (User::where('name', $phase[2])->count()) {
                                 $data = User::where('name', $phase[2])->get() ;
-                                $message = '取得 ('.$phase[2].') 的使用者資料:'."\n". json_encode($data, JSON_UNESCAPED_UNICODE)  ;
+                                $message = '取得 ('.$phase[2].') 的使用者資料:'."\n" ;
+                                $message .= json_encode($data, JSON_UNESCAPED_UNICODE)  ;
                             }
                             else {
                                 $message = '使用者 ('. $phase[2] .') 不存在' ; 
@@ -183,12 +189,12 @@ class LinebotController extends Controller
                         }
                     }
                     else if ($phase[1] == 'count') {
-                        $count = User::all()->count() ;
-                        $message = '註冊人數: '.$count.' 人' ;
+                        $message = '註冊人數: ' .User::all()->count(). ' 人' ;
                         $user->phase = '' ;
                     }
                     else {
-                        $message = "指令 'get' 取得使用者\n指令 'delete' 刪除使用者\n指令 'count' 使用者總數" ;
+                        $message = $line_chatbot_rep->getUserMenu() ;
+
                         // 如果指令不正確, 則取出本次堆疊的指令: ['user', 'aaaa'] -> ['user']
                         array_pop($phase) ;
                         $user->phase = join(',', $phase) ;
@@ -225,10 +231,14 @@ class LinebotController extends Controller
 
                             // 寄發電子郵件的程式
                             else {
+                                $from_mail = "henwen.work@gmail.com" ;
+                                $from_user = "Henwen's Line Chatbot" ;
+                                $from_title = "這是一封由 Line Chatbot 觸發的測試信" ;
+
                                 $smtp = config('henwen.smtp') ;
                                 $mr = new LineChatbotRepository() ;
                                 $mr->setBasic($smtp["host"], $smtp["port"], $smtp["login_user"], $smtp["login_passwd"]) ;
-                                $mr->setFrom("henwen.work@gmail.com", "Line Chat Bot", "這是一封由 Line Chat Bot 觸發的測試信") ;
+                                $mr->setFrom($from_mail, $from_user, $from_title) ;
                                 $mr->setPHPMailer($smtp["is_smtp"], $smtp["smtp_auth"], $smtp["smtp_debug"], $smtp["is_ssl"]) ;
                                 $mr->send($data) ;
 
@@ -248,7 +258,7 @@ class LinebotController extends Controller
 
             else if ($phase[0] == 'server') {
                 if (! isset($phase[1])) {
-                    $message = "指令 'disk' 查看硬碟空間\n指令 'task' 查看行程狀態" ;
+                    $message = $line_chatbot_rep->getServerMenu() ;
                     $user->phase = join(',', $phase) ;
                 }
                 
@@ -256,15 +266,15 @@ class LinebotController extends Controller
                     if ($phase[1] == 'disk') {
                         $total_bytes = disk_total_space('C:') ;
                         $free_bytes = disk_free_space('C:') ;
-                        $total_gb = $total_bytes ? round($total_bytes / pow(1024, 3), 3) : 0 ;
-                        $free_gb = $free_bytes ? round($free_bytes / pow(1024, 3), 3) : 0 ;
-                        $message = '本機硬碟(C:) 剩餘 '. $free_gb .' GB, 共 '. $total_gb .' GB'."\n" ;
+                        $total_gb = $total_bytes ? round($total_bytes / pow(1024, 3), 2) : 0 ;
+                        $free_gb = $free_bytes ? round($free_bytes / pow(1024, 3), 2) : 0 ;
+                        $message = '本機硬碟(C:)'."\n".'剩餘 '. $free_gb .' GB, 共 '. $total_gb .' GB'."\n" ;
 
                         $total_bytes = disk_total_space('D:') ;
                         $free_bytes = disk_free_space('D:') ;
-                        $total_gb = $total_bytes ? round($total_bytes / pow(1024, 3), 3) : 0 ;
-                        $free_gb = $free_bytes ? round($free_bytes / pow(1024, 3), 3) : 0 ;
-                        $message .= '本機硬碟(D:) 剩餘 '. $free_gb .' GB, 共 '. $total_gb .' GB' ;
+                        $total_gb = $total_bytes ? round($total_bytes / pow(1024, 3), 2) : 0 ;
+                        $free_gb = $free_bytes ? round($free_bytes / pow(1024, 3), 2) : 0 ;
+                        $message .= '本機硬碟(D:)'."\n".'剩餘 '. $free_gb .' GB, 共 '. $total_gb .' GB' ;
 
                         $user->phase = '' ;
                     }
@@ -280,7 +290,7 @@ class LinebotController extends Controller
                         $user->phase = '' ;
                     }
                     else {
-                        $message = "指令 'disk' 查看硬碟空間\n指令 'task' 查看行程狀態" ;
+                        $message = $line_chatbot_rep->getServerMenu() ;
                         // 如果指令不正確, 則取出本次堆疊的指令
                         array_pop($phase) ;
                         $user->phase = join(',', $phase) ;
@@ -290,11 +300,17 @@ class LinebotController extends Controller
 
             else if ($phase[0] == 'sql') {
                 if (! isset($phase[1])) {
-                    $message = "請寫不含分號 ; 的有效的 SQL (SELECT Only): " ;
+                    $message = "請寫不含分號 ; 的 SQL 語句" ;
                     $user->phase = join(',', $phase) ;
                 }
                 else {
                     try {
+                        if (strpos($phase[1], ';') !== false) {
+                            throw new \Exception('不能包含分號', 0) ;
+                        }
+                        if (strpos($phase[1], 'update') === 0 || strpos($phase[1], 'delete') === 0) {
+                            throw new \Exception('請勿執行 Update 或 Delete 語句', 0) ;
+                        }
                         // 需要檢查與過濾 SQL 語法
                         $result = DB::select($phase[1]) ;
                         $message = json_encode($result, JSON_UNESCAPED_UNICODE) ;
@@ -306,198 +322,68 @@ class LinebotController extends Controller
                 }
             } // End-$phase[0] == 'sql'
 
+            else if (in_array($phase[0], ['movie', '電影'])) {
+                if (! isset($phase[1])) {
+                    $message = $line_chatbot_rep->getMovieMenu() ;
+                    $user->phase = join(',', $phase) ;
+                }
+                
+                else {
+                    if ($phase[1] == '1') {
+                        $url = 'https://movies.yahoo.com.tw/theater_result.html/id=129' ;
+                        $message .= $line_chatbot_rep->getMovieMessage($url) ;
+                        $user->phase = '' ;
+                    }
+                    else if ($phase[1] == '2') {
+                        $url = 'https://movies.yahoo.com.tw/theater_result.html/id=12' ;
+                        $message .= $line_chatbot_rep->getMovieMessage($url) ;
+                        $user->phase = '' ;
+                    }
+                    else {
+                        $message = $line_chatbot_rep->getMovieMenu() ;
+                        // 如果指令不正確, 則取出本次堆疊的指令
+                        array_pop($phase) ;
+                        $user->phase = join(',', $phase) ;
+                    }
+                }
+            } // End-$phase[0] == 'movie', '電影'
+
+            else if (in_array($phase[0], ['gold', '黃金'])) {
+                include_once base_path('public/phplib/simple_html_dom.php') ;
+                $dom = file_get_html("https://www.esunbank.com.tw/bank/personal/deposit/gold/price/current-price") ;
+                $result = $dom->find('table[class=inteTable] td') ;
+                $message = [
+                    "ounce" => ['buy' => $result[4]->innertext, 'sell' => $result[5]->innertext],
+                    "gram"  => ['buy' => $result[10]->innertext, 'sell' => $result[11]->innertext],
+                ] ;
+
+                $user->phase = '' ;
+            } // End-$phase[0] == 'sql'
+
             else {
-                $message  = "指令 'member' 會員管理\n" ;
-                $message .= "指令 'user' 使用者管理\n" ;
-                $message .= "指令 'mail' 信件通知\n" ;
-                $message .= "指令 'sql' 可執行 SQL 語法\n" ;
-                $message .= "指令 'server' 查看主機狀態" ;
+                $message = $line_chatbot_rep->getMenu() ;
+                $user->phase = '' ;
             }
 
             // 儲存使用者狀態: phase, send_time
             $user->save() ;
+
         } // End $eventsType === 'message'
 
         // 送出訊息
         if (! empty($message)) {
-             // 套用 Flex Message
-            $flex_messages = $line_chatbot_rep->getFlexMessage($message) ;
-
+            // 套用 Flex Message
+            if (in_array($phase[0], ['gold', '黃金'])) {
+                $flex_messages = $line_chatbot_rep->getGoldFlexMessage($message) ;
+            }
+            else {
+                $flex_messages = $line_chatbot_rep->getFlexMessage($message) ;
+            }
+            
             // 回覆訊息給 Line User
             $line_chatbot_rep->sendMessage($flex_messages, $replyToken) ;
         } // End 送出訊息
 
     } // End reply()
 
-    // 查詢已建立的 Rich Menu ID
-    public function listRichmenu()
-    {
-        $ch = curl_init() ;
-        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu/list') ;
-        curl_setopt($ch, CURLOPT_POST, false) ;
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' .config('line.channel_access_token')
-        ]) ;
-        $result = curl_exec($ch) ;
-        curl_close($ch) ;
-        var_dump($result) ;
-    }
-
-    // 建立 Rich Menu 並取得一個 Rich Menu ID
-    public function createRichmenu()
-    {
-        $data = [
-            'size' => [
-                'width' => 800,
-                'height' => 540,
-            ],
-            'selected' => false,
-            'name' => 'Henwen Richmenu',
-            'chatBarText' => '打開指令',
-            'areas' => [
-                [
-                    'bounds' => [
-                        'x' => 0,
-                        'y' => 0,
-                        'width' => 266,
-                        'height' => 270,
-                    ],
-                    'action' => [
-                        'type' => 'message',
-                        'text' => 'user',
-                    ],
-                ],
-                [
-                    'bounds' => [
-                        'x' => 267,
-                        'y' => 0,
-                        'width' => 266,
-                        'height' => 270,
-                    ],
-                    'action' => [
-                        'type' => 'message',
-                        'text' => 'member',
-                    ],
-                ],
-                [
-                    'bounds' => [
-                        'x' => 533,
-                        'y' => 0,
-                        'width' => 266,
-                        'height' => 270,
-                    ],
-                    'action' => [
-                        'type' => 'message',
-                        'text' => 'mail',
-                    ],
-                ],
-                [
-                    'bounds' => [
-                        'x' => 0,
-                        'y' => 270,
-                        'width' => 266,
-                        'height' => 270,
-                    ],
-                    'action' => [
-                        'type' => 'message',
-                        'text' => 'server',
-                    ],
-                ],
-                [
-                    'bounds' => [
-                        'x' => 267,
-                        'y' => 270,
-                        'width' => 266,
-                        'height' => 270,
-                    ],
-                    'action' => [
-                        'type' => 'message',
-                        'text' => 'sql',
-                    ],
-                ],
-                [
-                    'bounds' => [
-                        'x' => 533,
-                        'y' => 270,
-                        'width' => 266,
-                        'height' => 270,
-                    ],
-                    'action' => [
-                        'type' => 'uri',
-                        'uri' => config('henwen.github_uri'),
-                    ],
-                ],
-            ],
-        ] ;
-
-        $ch = curl_init() ;
-        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu') ;
-        curl_setopt($ch, CURLOPT_POST, true) ;
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data)) ;
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Content-Type: application/json',
-            'Authorization: Bearer ' .config('line.channel_access_token')
-        ]) ;
-        $result = curl_exec($ch) ;
-        curl_close($ch) ;
-        var_dump($result) ;
-    }
-
-    // 刪除 Rich Menu ID
-    public function deleteRichmenu()
-    {
-        $ch = curl_init() ;
-        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu/richmenu-bcd85dfee3c3f46a09fa5a07b964a7e6') ;
-        curl_setopt($ch, CURLOPT_POST, false) ;
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE') ;
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' .config('line.channel_access_token')
-        ]) ;
-        $result = curl_exec($ch) ;
-        curl_close($ch) ;
-        var_dump($result) ;
-    }
-
-    // 上傳圖片至指定的 Rich Menu ID
-    public function uploadRichmenu()
-    {
-        $image = base_path('public/images/richmenu2.jpg') ;
-
-        $data = [
-            'name' => 'richmenu.jpg',
-            'file' => $image,
-        ] ;
-        $ch = curl_init() ;
-        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/richmenu/'.config('line.rich_id').'/content') ;
-        curl_setopt($ch, CURLOPT_POST, true) ;
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data) ;
-        curl_setopt($ch,CURLOPT_POSTFIELDS, file_get_contents($image)) ;
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true) ;
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' .config('line.channel_access_token'),
-            'Content-Type: image/jpeg',
-            'Content-Length:'. filesize($image),
-        ]) ;
-        $result = curl_exec($ch) ;
-        curl_close($ch) ;
-        var_dump($result) ;
-    }
-
-    // 設定所有使用者, 使用指定 Rich Menu ID 的圖片
-    public function setDefaultRichmenu()
-    {
-        $ch = curl_init() ;
-        curl_setopt($ch, CURLOPT_URL, 'https://api.line.me/v2/bot/user/all/richmenu/'.config('line.rich_id')) ;
-        curl_setopt($ch, CURLOPT_POST, true) ;
-        curl_setopt($ch,CURLOPT_POSTFIELDS, "") ;
-        curl_setopt($ch, CURLOPT_HTTPHEADER, [
-            'Authorization: Bearer ' .config('line.channel_access_token'),
-        ]) ;
-        $result = curl_exec($ch) ;
-        curl_close($ch) ;
-        var_dump($result) ;
-    }
 }

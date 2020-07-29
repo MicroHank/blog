@@ -17,10 +17,6 @@ Route::get('/', function () {
 
 Route::prefix('test')->group(function (){
 	Route::get('/', 'TestController@index');
-	// Route::match(['get'], 'show/{name}', 'TestController@show')->name('show');
-	// Route::post('add', 'TestController@add')->name('add');
-	// Route::post('delete/{id}', 'TestController@destroy');
-	// Route::get('testdb', 'TestController@testdb');
 });
 
 ////////////////////////////////////////////////////////////////
@@ -31,15 +27,6 @@ Route::post('language', 'LoginController@language');
 // user 帳號 進行登入行為
 Route::post('/dologin', 'LoginController@auth')->name('dologin');
 
-/*
-GET		/member  				 index()	member.index
-GET		/member/create 			 create()	member.create
-POST	/member 				 store()	member.store
-GET		/member/{member_id}		 show()		member.show
-GET		/member/{member_id}/edit edit()		member.edit
-PUT		/member/{member_id}	 	 update()	member.update
-DELETE 	/member/{member_id}		 destroy()	member.destroy
-*/
 Route::group(['middleware' => ['language']], function () {
 	// Dashboard
 	Route::get('dashboard', 'DashboardController@index')->name('dashboard') ;
@@ -53,7 +40,15 @@ Route::group(['middleware' => ['language']], function () {
 	Route::post('user/{id}/setApiToken', 'UserController@setApiToken')->name('user.setApiToken');
 	Route::get('user/getApiToken', 'UserController@getApiToken')->name('user.getApiToken');
 
-	// 會員
+	/*  會員
+		GET		/member  				 index()	member.index
+		GET		/member/create 			 create()	member.create
+		POST	/member 				 store()	member.store
+		GET		/member/{member_id}		 show()		member.show
+		GET		/member/{member_id}/edit edit()		member.edit
+		PUT		/member/{member_id}	 	 update()	member.update
+		DELETE 	/member/{member_id}		 destroy()	member.destroy
+	*/
 	Route::get('member/log', 'MemberController@log');
 	Route::resource('member', 'MemberController');
 	
@@ -74,15 +69,16 @@ Route::group(['middleware' => ['language']], function () {
 	Route::post('line/send', 'LineController@sendNotify')->name('line.send'); // 送出訊息至 Line
 
 	// Line Chat Bot: reply webhook callback url
-	Route::post('line/reply', 'LinebotController@reply')->name('line.reply');
-	// 處理 Richmenu
-	Route::get('line/createRichmenu', 'LinebotController@createRichmenu');
-	Route::get('line/listRichmenu', 'LinebotController@listRichmenu');
-	Route::get('line/deleteRichmenu', 'LinebotController@deleteRichmenu');
-	Route::get('line/uploadRichmenu', 'LinebotController@uploadRichmenu');
-	Route::get('line/setDefaultRichmenu', 'LinebotController@setDefaultRichmenu');
+	Route::post('line/reply', 'LinebotController@reply');
 
-	// SMTP Send Mail Test
+	// 處理 Richmenu
+	Route::get('line/richmenu', 'LinebotRichmenuController@index'); // List Richmenu ID
+	Route::get('line/richmenu/create', 'LinebotRichmenuController@create'); // Create a New Richmenu ID
+	Route::get('line/richmenu/delete/{rich_id}', 'LinebotRichmenuController@delete'); // Delete Richmenu ID
+	Route::get('line/richmenu/upload', 'LinebotRichmenuController@upload'); // Upload Image to Richmenu ID
+	Route::get('line/richmenu/setDefault', 'LinebotRichmenuController@setDefault'); // Set Default Richmenu ID to all Users
+
+	// Send Mail: by google SMTP
 	Route::get('mail/index', 'MailController@index')->name('mail.index');
 	Route::post('mail/send', 'MailController@send')->name('mail.send');
 
