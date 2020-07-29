@@ -331,12 +331,12 @@ class LinebotController extends Controller
                 else {
                     if ($phase[1] == '1') {
                         $url = 'https://movies.yahoo.com.tw/theater_result.html/id=129' ;
-                        $message .= $line_chatbot_rep->getMovieMessage($url) ;
+                        $message = $line_chatbot_rep->getMovieMessage($url) ;
                         $user->phase = '' ;
                     }
                     else if ($phase[1] == '2') {
                         $url = 'https://movies.yahoo.com.tw/theater_result.html/id=12' ;
-                        $message .= $line_chatbot_rep->getMovieMessage($url) ;
+                        $message = $line_chatbot_rep->getMovieMessage($url) ;
                         $user->phase = '' ;
                     }
                     else {
@@ -375,6 +375,9 @@ class LinebotController extends Controller
             // 套用 Flex Message
             if (in_array($phase[0], ['gold', '黃金'])) {
                 $flex_messages = $line_chatbot_rep->getGoldFlexMessage($message) ;
+            }
+            else if (in_array($phase[0], ['movie', '電影']) && is_array($message)) {
+                $flex_messages = $line_chatbot_rep->getMovieFlexMessage($message) ;
             }
             else {
                 $flex_messages = $line_chatbot_rep->getFlexMessage($message) ;

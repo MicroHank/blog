@@ -2,6 +2,7 @@
 	namespace App\Repositories\Line;
 
 	use Illuminate\Support\Facades\DB;
+    use Illuminate\Support\Facades\Log;
     use Carbon\Carbon;
 
 	class LineChatbotMessageRepository
@@ -84,26 +85,31 @@
         {
             include_once base_path('public/phplib/simple_html_dom.php') ;
 
-            $message = '' ;
-
-            $dom = file_get_html($url) ;
-            // 電影名稱: 你的名字, 天氣之子
+            $dom = file_get_html("https://movies.yahoo.com.tw/theater_result.html/id=12") ;
             $name = $dom->find('div[class=theaterlist_name] a') ;
-            // 電影類型: 數位,3D,ATMOS,IMAX...etc
+            $photo = $dom->find('div[class=release_foto] img') ;
+            $intro = $dom->find('div[class=theaterlist_name] a') ;
             $type = $dom->find('div[class=theaterlist_name] div div') ;
-            // 電影時段
             $time = $dom->find('div[class=release_info_text] ul[class=theater_time]') ;
 
+            $message = [] ;
+
             for ($i = 0 ; $i < count($name) ; $i++) {
-                $message .= trim($name[$i]->innertext).' ' ; // 電影名稱
-                $message .= '('.trim($type[$i]->innertext).')'."\n" ; // 電影類型
-                // 時間
+                $movie = [] ;
+                // 電影名稱與類型
+                $movie["name"] = trim($name[$i]->innertext).' ('.trim($type[$i]->innertext).')' ;
+                // 電影圖片
+                $movie["photo"] = $photo[$i]->attr['src'] ;
+                // 電影介紹連結
+                $movie["intro"] = $intro[$i]->attr['href'] ;
+                // 處理時間
                 $time_dom = str_get_html($time[$i]) ;
-                $times = $time_dom->find('a') ;
-                foreach ($times as $t) {
-                    $message .= trim($t->innertext).' ' ;
+                $tmp = [] ;
+                foreach ($time_dom->find('a') as $t) {
+                    array_push($tmp, trim($t->innertext)) ;
                 }
-                $message .= "\n" ;
+                $movie["time"] = join(', ', $tmp) ;
+                array_push($message, $movie) ;
             }
             return $message ;
         }
@@ -441,4 +447,52 @@
                 ],
             ] ;
         } // End getGoldFlexMessage()
+
+        /**
+         * 製作 Movie carousel
+         *
+         * @param Array Movies ['name' => '電影名稱', 'photo' => '電影圖片link', 'intro' => '電影介紹link', 'time' => '09:00, 10:30']
+         * @return Array Template Message: carousel
+         */
+        public function getMovieFlexMessage($message)
+        {
+            // 輪播最大值為 10 筆
+            $max = count($message) > 10 ? 10 : count($message) ;
+            $carousel = [] ;
+
+            for ($i = 0 ; $i < $max ; $i++) {
+                $elem = [
+                    'thumbnailImageUrl' => $message[$i]['photo'],
+                    'imageBackgroundColor' => '#FFFFFF',
+                    'title' =>  $message[$i]['name'],
+                    'text' =>  $message[$i]['time'],
+                    'defaultAction' => [
+                        'type' => 'uri',
+                        'label' => 'View Detail',
+                        'uri' => 'https://www.google.com',
+                    ],
+                    'actions' => [
+                        [
+                            'type' => 'uri',
+                            'label' => '查看電影細節',
+                            'uri' => $message[$i]['intro'],
+                        ]
+                    ],
+                ] ;
+                array_push($carousel, $elem) ;
+            }
+
+            return $flex_messages = [
+                [
+                    'type' => 'template',
+                    'altText' => 'This is a image carousel template',
+                    'template' => [
+                        'type' => 'carousel',
+                        'columns' => $carousel,
+                    ],
+                    'imageAspectRatio' => 'rectangle',
+                    'imageSize' => 'cover',
+                ],
+            ] ;
+        } // End getMovieFlexMessage()
 	}
