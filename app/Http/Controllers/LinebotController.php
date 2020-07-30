@@ -47,8 +47,19 @@ class LinebotController extends Controller
             Log::info($postback_data) ;
         }
         else if ($eventsType == 'message') {
-            $text = strtolower(trim($obj['events'][0]['message']['text'])) ; // 使用者傳送的訊息
-            Log::info($text) ;    
+            // 傳送文字
+            if ($obj['events'][0]['message']['type'] == 'text') {
+                $text = strtolower(trim($obj['events'][0]['message']['text'])) ; // 使用者傳送的訊息
+                Log::info($text) ;
+            }
+            // 有傳送位置
+            else if ($obj['events'][0]['message']['type'] == 'location') {
+                $address = trim($obj['events'][0]['message']['address']) ;
+                $latitude = $obj['events'][0]['message']['latitude'] ;
+                $longitude = $obj['events'][0]['message']['longitude'] ;
+                $text = 'address' ;
+                Log::info(json_encode($obj['events'][0]['message'], JSON_UNESCAPED_UNICODE)) ;
+            }
         }
         //---------------------------------------------------------//
         
@@ -377,10 +388,11 @@ class LinebotController extends Controller
                 $flex_messages = $line_chatbot_rep->getGoldFlexMessage($message) ;
             }
             else if (in_array($phase[0], ['movie', '電影']) && is_array($message)) {
-                $flex_messages = $line_chatbot_rep->getMovieFlexMessage($message) ;
+                $flex_messages = $line_chatbot_rep->getMovieCarousel($message) ;
             }
             else {
                 $flex_messages = $line_chatbot_rep->getFlexMessage($message) ;
+                // $flex_messages = $line_chatbot_rep->getQuickReply($message) ;
             }
             
             // 回覆訊息給 Line User

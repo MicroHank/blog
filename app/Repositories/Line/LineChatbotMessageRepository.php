@@ -85,7 +85,7 @@
         {
             include_once base_path('public/phplib/simple_html_dom.php') ;
 
-            $dom = file_get_html("https://movies.yahoo.com.tw/theater_result.html/id=12") ;
+            $dom = file_get_html($url) ;
             $name = $dom->find('div[class=theaterlist_name] a') ;
             $photo = $dom->find('div[class=release_foto] img') ;
             $intro = $dom->find('div[class=theaterlist_name] a') ;
@@ -98,17 +98,19 @@
                 $movie = [] ;
                 // 電影名稱與類型
                 $movie["name"] = trim($name[$i]->innertext).' ('.trim($type[$i]->innertext).')' ;
-                // 電影圖片
+                // 電影圖片連結
                 $movie["photo"] = $photo[$i]->attr['src'] ;
                 // 電影介紹連結
                 $movie["intro"] = $intro[$i]->attr['href'] ;
-                // 處理時間
+                // 電影播放時間
                 $time_dom = str_get_html($time[$i]) ;
-                $tmp = [] ;
-                foreach ($time_dom->find('a') as $t) {
-                    array_push($tmp, trim($t->innertext)) ;
+                $a_content = $time_dom->find('a') ; // 一個 a tag 為一筆電影時間
+                $time_string = [] ;
+                // 最多 10 筆播放時間: API text 欄位長度有限制
+                for ($t = 0 ; $t < (count($a_content) > 10 ? 10 : count($a_content)) ; $t++) {
+                    array_push($time_string, trim($a_content[$t]->innertext)) ;
                 }
-                $movie["time"] = join(', ', $tmp) ;
+                $movie["time"] = join(' ', $time_string) ;
                 array_push($message, $movie) ;
             }
             return $message ;
@@ -244,14 +246,6 @@
                                     'align' => 'center',
                                     'gravity' => 'center',
                                 ],
-                                // [
-                                //     'type' => 'button',
-                                //     'action' => [
-                                //     	'type' => 'postback',
-                                //     	'label' => 'Postback',
-                                //     	'data' => 'action=test&param1=111&param2=222',
-                                //     ],
-                                // ],
                             ],
                         ],
                     ],
@@ -454,7 +448,7 @@
          * @param Array Movies ['name' => '電影名稱', 'photo' => '電影圖片link', 'intro' => '電影介紹link', 'time' => '09:00, 10:30']
          * @return Array Template Message: carousel
          */
-        public function getMovieFlexMessage($message)
+        public function getMovieCarousel($message)
         {
             // 輪播最大值為 10 筆
             $max = count($message) > 10 ? 10 : count($message) ;
@@ -485,7 +479,7 @@
             return $flex_messages = [
                 [
                     'type' => 'template',
-                    'altText' => 'This is a image carousel template',
+                    'altText' => 'This is a carousel template',
                     'template' => [
                         'type' => 'carousel',
                         'columns' => $carousel,
@@ -494,5 +488,66 @@
                     'imageSize' => 'cover',
                 ],
             ] ;
-        } // End getMovieFlexMessage()
+        } // End getMovieCarousel()
+
+        /**
+         * 製作 Confirm Template
+         *
+         * @param String message: 
+         * @return Array Flex Message
+         */
+        public function getConfirmTemplate()
+        {
+            
+            return $flex_messages = [
+                [
+                    'type' => 'template',
+                    'altText' => 'This is a confirm template',
+                    'template' => [
+                        'type' => 'confirm',
+                        'text' => '您確定嗎?',
+                        'actions' => [
+                            [
+                                'type' => 'message',
+                                'label' => 'Yes',
+                                'text' => 'yes',
+                            ],
+                            [
+                                'type' => 'message',
+                                'label' => 'No',
+                                'text' => 'no',
+                            ],
+                        ],
+                    ],
+                ],
+            ] ;
+        } // End - getConfirmTemplate()
+
+        /**
+         * 製作 quickly reply: Location
+         *
+         * @param String message 
+         * @return Array Flex Message
+         */
+        public function getLocation()
+        {
+            
+            return $flex_messages = [
+                [
+                    'type' => 'text',
+                    'text' => '傳送您的位置',
+                    'quickReply' => [
+                        'items' => [
+                            [
+                                'type' => 'action',
+                                'action' => [
+                                    'type' => 'location',
+                                    'label' => 'Send Location',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ] ;
+        } // End - getLocation()
 	}
