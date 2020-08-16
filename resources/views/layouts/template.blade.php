@@ -19,8 +19,9 @@
 
     <!-- ace settings handler -->
     <script src="{{ URL::to('/') }}/resources/assets/js/ace-extra.js"></script>
-    @yield('js')
+    <!-- self defined css js -->
     @yield('css')
+    @yield('js')
 </head>
 <body class="skin-1">
     @include('layouts/header')
@@ -40,9 +41,6 @@
     </div><!-- /.main-container -->
 
     <script src="{{ URL::to('/') }}/bower_components/jquery/dist/jquery.min.js"></script>
-    <!-- 全域頁面：字典檔 -->
-    <!-- <script src="{{ URL::to('/') }}/frontend_language/translation.js" type="text/javascript"></script> -->
-    
     <!-- bootstrap JS -->
     <script src="{{ URL::to('/') }}/resources/js/moment.js"></script>
     <script src="{{ URL::to('/') }}/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>

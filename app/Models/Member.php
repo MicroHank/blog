@@ -21,16 +21,4 @@ class Member extends Model
         'deleted' => MemberDeletedEvent::class,
     ];
 
-    /**
-     * Get the Groups for the User.
-     */
-    public static function getMemberPaginate($perpage = 10)
-    {
-        return DB::table('member AS u')
-        ->leftJoin('user_group AS ug', 'u.user_id', '=', 'ug.user_id')
-        ->leftJoin('groups AS g', 'ug.group_id', '=', 'g.group_id')
-        ->groupBy('u.user_id')
-        ->select('u.*', DB::raw('GROUP_CONCAT(g.group_name) AS group_name'))
-        ->paginate($perpage) ;
-    }
 }

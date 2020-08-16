@@ -14,11 +14,13 @@
             {{ session('status') }}
         </div>
         @endif
-        @if ($errors->any())
+        @if (count($errors))
         <div class="alert alert-danger">
             <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
+                @foreach ($errors as $col => $validate)
+                    @foreach ($validate as $content)
+                        <li>{{ $col }}: {{ $content }}</li>
+                    @endforeach
                 @endforeach
             </ul>
         </div>

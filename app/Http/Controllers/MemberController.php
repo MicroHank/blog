@@ -7,8 +7,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Request;
+use App\Http\Requests\StoreMemberRequest;
 use Validator;
-use Illuminate\Support\Facades\Auth;
 use App\Repositories\Member\MemberRepository;
 use App\Models\Member;
 use App\Models\MemberLogs;
@@ -17,7 +17,7 @@ class MemberController extends Controller
 {
     public function __construct(MemberRepository $mr)
     {
-        $this->middleware('language');
+        $this->middleware('language') ;
         $this->member_rep = $mr ;
     }
     
@@ -28,14 +28,8 @@ class MemberController extends Controller
      */
     public function index()
     {
-        if (! Auth::check()) {
-            return redirect()->route('login') ;
-        }
-
-        // $members = DB::table('member')->get();
-        // $members = DB::table('member')->paginate(10);
         $perpage = config('henwen.paginate.member.list', 10) ;
-        $member = Member::getMemberPaginate($perpage) ;
+        $member = $this->member_rep->getMemberPaginate($perpage) ;
         return view('member.index', ['member' => $member ]) ;
     }
 
@@ -55,62 +49,50 @@ class MemberController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreMemberRequest $request)
     {
+        /*
+         * 利用 Validator 檢驗參數, 失敗時會帶 $errors 至 View
+         */
+        // $validator = Validator::make($request->all(), [
+        //     'account' => 'required|min:3|max:12',
+        //     'password1' => 'required|min:3|max:10',
+        //     'password2' => 'required|min:3|max:10|same:password1',
+        //     'username' => 'required|min:3|max:20',
+        // ]);
+
+        // if ($validator->fails()) {
+        //     $request->flashExcept(['password1', 'password2']) ;
+        //     return redirect()
+        //         ->route('member.create')->withErrors($validator)
+        //         ->withInput()->with('status', '帳號長度必須大於 3') ;
+        // }
+
+        // 手動檢查
+        // 檢查密碼是否相等, 導回新增會員頁面 並帶入原來的 $request 以及新增 session 變數 status
+        // if ($password1 !== $password2) {
+        //     $request->flashExcept(['password1', 'password2']) ;
+        //     return redirect()->route('member.create')->withInput()->with('status', '密碼欄位必須相等') ;
+        // } 
+
+        // StoreMemberRequest 驗證通過後
         $account = $request->input('account') ;
         $password1 = $request->input('password1') ;
         $password2 = $request->input('password2') ;
         $user_name =  $request->input('username') ;
 
-        /*
-         * 利用 Validator 檢驗參數, 失敗時會帶 $errors 至 View
-         */
-        $validator = Validator::make($request->all(), [
-            'account' => 'required|min:3|max:12',
-            'password1' => 'required|min:3|max:10',
-            'password2' => 'required|min:3|max:10',
-            'username' => 'required|min:3|max:20',
-        ]);
-
-        if ($validator->fails()) {
-            $request->flashExcept(['password1', 'password2']) ;
-            return redirect()
-                ->route('member.create')->withErrors($validator)
-                ->withInput()->with('status', '帳號長度必須大於 3、密碼必須相等') ;
-        }
-
-        // 模擬參數檢查: 導回新增會員頁面 並帶入原來的 $request 以及新增 session 變數 status
-        if (strlen($account) <= 3 || empty($password1) || empty($password2) || $password1 !== $password2) {
-            // $request->flashOnly(['account', 'username']) ;
-            $request->flashExcept(['password1', 'password2']) ;
-            return redirect()->route('member.create')->withInput()->with('status', '帳號長度必須大於 3、密碼必須相等') ;
-            //return redirect('member/create')->withInput() ;
-        } 
-
         try {
-            if ($password1 !== $password2) {
-                throw new \Exception("Password are not equal.\r\n", 1) ;
-            }
-            $password_hash = password_hash($password2, PASSWORD_BCRYPT, ["cost" => 12]) ;
-
             $m = new Member ;
             $m->account = $account ;
-            $m->password = $password_hash ;
+            $m->password = password_hash($password2, PASSWORD_BCRYPT, ["cost" => 12]) ;
             $m->user_name = $user_name ;
             $m->supervisor_id = 0 ;
             $m->save() ;
 
-            // DB::table('member')->insert([
-            //     'account' => $account,
-            //     'password' => $password_hash,
-            //     'user_name' => $user_name,
-            //     'supervisor_id' => 0,
-            // ]) ;
-
             return redirect()->route('member.index') ;
-
         }  catch (\Exception $e) {
-            echo "Add User Fail: ".$e->getMessage() ;
+            $request->flashExcept(['password1', 'password2']) ;
+            return redirect()->route('member.create')->withInput()->with('status', $e->getMessage()) ;
         }
     }
 
@@ -178,12 +160,10 @@ class MemberController extends Controller
     public function destroy($id)
     {
         if (Member::find($id)->delete()) {
-        // if (DB::table('member')->where('user_id', '=', $id)->delete()) {
-            // return redirect()->route('member.index') ;
             return redirect()->back() ;
         }
         else {
-            echo "Error" ;
+            return redirect()->back()->with('status', 'Something Wrong') ; 
         }
     }
 

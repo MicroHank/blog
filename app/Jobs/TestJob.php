@@ -8,6 +8,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\Log;
 
 class TestJob implements ShouldQueue
 {
@@ -30,6 +31,6 @@ class TestJob implements ShouldQueue
      */
     public function handle()
     {
-        var_dump("app/Jobs/TestJob.php: Do Job hanle") ;
+        Log::info("Doing queue") ;
     }
 }

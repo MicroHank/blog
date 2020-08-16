@@ -50,6 +50,11 @@
         protected $subject ;
 
         /**
+         * @var Array, 寄信所需資料陣列
+         */
+        protected $data ;
+
+        /**
          * 建構式：設定 SMTP 帳號密碼、寄信者資訊、信件標題
          * @param $host String 主機
          * @param $port INT 連接埠號

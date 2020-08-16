@@ -18,7 +18,7 @@
         @endcomponent
 
         <a href="{{ route('member.create') }}">
-            <input type="submit" value="{{ trans('sidebar.member.new') }}" />
+            <input type="submit" class="btn btn-primary" value="{{ trans('sidebar.member.new') }}" />
         </a>
         <table class="table">
             <tr>
@@ -43,14 +43,14 @@
                 <td>{{ $user->created_at }}</td>
                 <td>
                     <a href="{{ route('member.edit' , $user->user_id) }}">
-                        <input type="submit" value="{{ trans('global.action.edit') }}" />
+                        <input type="submit" class="btn btn-info" value="{{ trans('global.action.edit') }}" />
                     </a>
                 </td>
                 <td>
                     <form method="POST" action="{{ route('member.destroy' , $user->user_id) }}">
                         {{ csrf_field() }}
                         {{ method_field('DELETE') }}
-                        <input type="submit" value="{{ trans('global.action.delete') }}" />
+                        <input type="submit" class="btn btn-danger" value="{{ trans('global.action.delete') }}" />
                     </form>
                 </td>
             </tr>
